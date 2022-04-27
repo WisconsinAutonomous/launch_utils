@@ -24,6 +24,37 @@ def GetLaunchArgument(name: str) -> "LaunchConfiguration":
 
     return LaunchConfiguration(name)
 
+def GetPackageSourceDirectory(package: str, base: str = None) -> 'pathlib.Path':
+    """Helper method to get the package **source** directory.
+
+    Usually it's recommended to use ament_index_python.packages.get_package_share_directory,
+    but this returns the _install_ directory where everything is put after colcon build. In some
+    cases, we want to put code/generated data/etc. in the _source_ code. This package helps with this.
+
+    It takes a package name (str) and a base name (str). The base name is the location to begin
+    an downward search of the file tree for the package name. If base name is None (the default),
+    the environment variable 'ROS_WORKSPACE_SRC' will be used. If 'ROS_WORKSPACE_SRC' is not found,
+    the current working directory is used.
+
+    It is considered found if the package name is in the current searched folder absolute path
+    and a package.xml file is found in the same folder.
+
+    Will return the path as a pathlib.Path object or None if not found.
+
+    WARNING: Not fast if there are a lot of folders on the system.
+    """
+    import os
+    from pathlib import Path
+
+    if base is None:
+      base = os.environ.get("ROS_WORKSPACE_SRC", os.getcwd())
+
+    for root, dirs, files in os.walk(base):
+      if package == os.path.basename(root) and 'package.xml' in files:
+        return Path(root)
+    
+    return None
+
 
 def AddComposableNode(
     ld: LaunchDescription,
