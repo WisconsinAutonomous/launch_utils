@@ -79,8 +79,8 @@ def AddComposableNode(
     If ``add_as_regular_node`` is set to False (defaults to True), it will not create a ``Node`` if ``container`` is unset.
     """
 
-    from launch_utils.launch.conditions import MultipleIfConditions
-    from launch_utils.launch.substitutions import QuoteWrappedPythonExpression
+    from launch_utils.conditions import MultipleIfConditions
+    from launch_utils.substitutions import QuoteWrappedPythonExpression
 
     from launch_ros.actions import Node, LoadComposableNodes
     from launch_ros.descriptions import ComposableNode
