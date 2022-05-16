@@ -116,3 +116,41 @@ def AddComposableNode(
     )
     if add_as_regular_node:
         ld.add_action(node)
+
+def IncludeLaunchDescriptionWithCondition(ld: LaunchDescription, share: str, package: str, *, default: str = "False", **kwargs):
+    """
+    Conditionally include launch file.
+
+    This method is a simple wrapper of ``launch.actions.IncludeLaunchDescription`` that also adds a launch argument
+    that is conditionally checked whether it is set to false a runtime.
+
+    By default, the launch arguments name is ``disable_<package>``.
+
+    Args:
+        ld (LaunchDescription)
+        share (str): The name of the package that has the launch files (assumes to be in <share>/launch directory).
+        package (str): The package to launch. The launch file is assumed to be <package>.launch.py.
+        default (str): The default value. Defaults to "False".
+        **kwargs
+    """
+
+    from launch.actions import IncludeLaunchDescription
+    from launch.conditions import UnlessCondition
+    from launch.launch_description_sources import PythonLaunchDescriptionSource
+    from launch.substitutions import PathJoinSubstitution
+    from launch_ros.substitutions import FindPackageShare
+
+    launch_argument = f"disable_{package}"
+    disable_package = AddLaunchArgument(ld, launch_argument, default, description=f"Disable the '{package}.launch.py' file from being included.")
+
+    package = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare(share),
+                "launch",
+                f"{package}.launch.py"
+            ])
+        ]),
+        condition=UnlessCondition(disable_package),
+    )
+    ld.add_action(package)
